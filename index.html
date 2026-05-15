@@ -3,284 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#1A73E8">
-    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Finanzas App</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg: #F5F8FC;
-            --primary: #1A73E8;
-            --primary-dark: #1557B0;
-            --success: #0D904F;
-            --danger: #D93025;
-            --text: #1A2332;
-            --text-light: #5F6B7A;
-            --border: #D2E0F0;
-            --shadow: 0 4px 12px rgba(26,115,232,0.12);
-            --radius: 16px;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding-bottom: 90px;
-        }
-        .app-header {
-            background: linear-gradient(135deg, #1A73E8, #0D47A1);
-            color: white;
-            padding: 14px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .app-header h1 { font-size: 1.2em; }
-        .sync-status {
-            font-size: 0.7em;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: #4CAF50;
-        }
-        .nav-tabs {
-            display: flex;
-            background: white;
-            margin: 10px 14px;
-            border-radius: 12px;
-            padding: 4px;
-            box-shadow: var(--shadow);
-            gap: 4px;
-            overflow-x: auto;
-            position: sticky;
-            top: 52px;
-            z-index: 99;
-        }
-        .nav-tab {
-            flex: 1;
-            min-width: fit-content;
-            padding: 10px 12px;
-            border: none;
-            background: transparent;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.75em;
-            font-weight: 600;
-            color: var(--text-light);
-            white-space: nowrap;
-        }
-        .nav-tab.active { background: var(--primary); color: white; }
-        .tab-content { display: none; padding: 0 14px; }
-        .tab-content.active { display: block; }
-        .card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 14px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .card-title { font-weight: 700; color: var(--primary); cursor: pointer; }
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.75em;
-            white-space: nowrap;
-        }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-sm { padding: 4px 8px; font-size: 0.7em; }
-        .btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.73em; }
-        th { background: #E8F0FE; padding: 8px 6px; text-align: left; color: var(--primary-dark); font-size: 0.8em; }
-        td { padding: 6px; border-bottom: 1px solid var(--border); }
-        .row-ingreso { background: #E6F4EA; }
-        .row-gasto { background: #FFF8F6; }
-        .row-total { font-weight: 700; background: #E8F0FE; }
-        .badge {
-            font-size: 0.65em;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: 600;
-        }
-        .badge-primary { background: #E8F0FE; color: var(--primary); }
-        .badge-success { background: #E6F4EA; color: #0D904F; }
-        .badge-danger { background: #FCE8E6; color: #C5221F; }
-        .deuda-item {
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid var(--primary);
-        }
-        .deuda-item.pagado { border-left-color: var(--success); opacity: 0.8; }
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 8px;
-            margin-top: 8px;
-        }
-        .summary-item {
-            background: #F8FAFE;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .summary-item h4 { font-size: 0.6em; color: var(--text-light); text-transform: uppercase; }
-        .summary-item .val { font-size: 1em; font-weight: 700; }
-        .val.positive { color: #0D904F; }
-        .val.negative { color: #D93025; }
-        .fab {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            font-size: 1.6em;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(26,115,232,0.4);
-            z-index: 50;
-        }
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 200;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal {
-            background: white;
-            border-radius: var(--radius);
-            padding: 20px;
-            width: 100%;
-            max-width: 450px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 0.75em; font-weight: 600; color: var(--text-light); margin-bottom: 4px; }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.85em;
-            background: #F8FAFE;
-        }
-        .empty-state { text-align: center; padding: 30px; color: var(--text-light); }
-        hr { border: none; border-top: 1px dashed var(--border); margin: 12px 0; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',sans-serif;background:#F5F8FC;color:#1A2332;min-height:100vh;padding-bottom:80px}
+        .header{background:linear-gradient(135deg,#1A73E8,#0D47A1);color:white;padding:14px 20px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+        .header h1{font-size:1.2em}
+        .status-dot{font-size:0.7em;padding:4px 10px;border-radius:20px;background:#4CAF50}
+        .tabs{display:flex;background:white;margin:10px 14px;border-radius:12px;padding:4px;box-shadow:0 4px 12px rgba(26,115,232,0.12);gap:4px;overflow-x:auto;position:sticky;top:55px;z-index:99}
+        .tab{flex:1;min-width:fit-content;padding:10px 8px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-size:0.7em;font-weight:600;color:#5F6B7A;white-space:nowrap}
+        .tab.active{background:#1A73E8;color:white}
+        .content{display:none;padding:0 14px}
+        .content.active{display:block}
+        .card{background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 12px rgba(26,115,232,0.12);border:1px solid #D2E0F0}
+        .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+        .card-title{font-weight:700;color:#1A73E8;font-size:1em}
+        .btn{padding:6px 10px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.7em;white-space:nowrap}
+        .btn-blue{background:#1A73E8;color:white}
+        .btn-outline{background:transparent;border:2px solid #1A73E8;color:#1A73E8}
+        .btn-red{background:#D93025;color:white}
+        .btn-sm{padding:3px 6px;font-size:0.65em}
+        .btn-group{display:flex;gap:4px;flex-wrap:wrap}
+        table{width:100%;border-collapse:collapse;font-size:0.7em;min-width:600px}
+        th{background:#E8F0FE;padding:8px 5px;text-align:left;color:#1557B0;font-size:0.75em}
+        td{padding:6px 5px;border-bottom:1px solid #D2E0F0}
+        .row-in{background:#E6F4EA}
+        .row-out{background:#FFF8F6}
+        .row-total{font-weight:700;background:#E8F0FE}
+        .badge{font-size:0.6em;padding:3px 7px;border-radius:12px;font-weight:600}
+        .badge-q{background:#E8F0FE;color:#1A73E8}
+        .badge-ok{background:#E6F4EA;color:#0D904F}
+        .badge-no{background:#FCE8E6;color:#C5221F}
+        .deuda-item{background:white;border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;border-left:4px solid #1A73E8;font-size:0.8em}
+        .deuda-item.pagado{border-left-color:#0D904F;opacity:0.8}
+        .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-top:8px}
+        .summary-item{background:#F8FAFE;padding:8px;border-radius:8px;text-align:center}
+        .summary-item h4{font-size:0.6em;color:#5F6B7A;text-transform:uppercase}
+        .summary-item .val{font-size:0.9em;font-weight:700}
+        .val-green{color:#0D904F}
+        .val-red{color:#D93025}
+        .fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:#1A73E8;color:white;border:none;font-size:1.6em;cursor:pointer;box-shadow:0 6px 20px rgba(26,115,232,0.4);z-index:50}
+        .empty{text-align:center;padding:30px;color:#5F6B7A}
+        hr{border:none;border-top:1px dashed #D2E0F0;margin:10px 0}
     </style>
 </head>
 <body>
 
-    <header class="app-header">
-        <h1>💰 Finanzas App</h1>
-        <span class="sync-status" id="sync-status">🟢 Online</span>
-    </header>
-
-    <nav class="nav-tabs">
-        <button class="nav-tab active" data-tab="gastos">📊 Gastos</button>
-        <button class="nav-tab" data-tab="fic">🏦 FIC</button>
-        <button class="nav-tab" data-tab="tarjeta">💳 Tarjeta</button>
-        <button class="nav-tab" data-tab="deudas">👥 Deudas</button>
-    </nav>
-
-    <div class="tab-content active" id="tab-gastos"><div id="gastos-content">Cargando...</div></div>
-    <div class="tab-content" id="tab-fic"><div id="fic-content">Cargando...</div></div>
-    <div class="tab-content" id="tab-tarjeta"><div id="tarjeta-content">Cargando...</div></div>
-    <div class="tab-content" id="tab-deudas"><div id="deudas-content">Cargando...</div></div>
-
-    <div class="modal-overlay" id="modal-overlay">
-        <div class="modal" id="modal-content"></div>
+    <div class="header">
+        <h1>💰 Finanzas</h1>
+        <span class="status-dot" id="status">🟢 Online</span>
     </div>
 
-    <button class="fab" id="fab" title="Agregar">+</button>
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('gastos')">📊 Gastos</button>
+        <button class="tab" onclick="switchTab('fic')">🏦 FIC</button>
+        <button class="tab" onclick="switchTab('tarjeta')">💳 Tarjeta</button>
+        <button class="tab" onclick="switchTab('deudas')">👥 Deudas</button>
+    </div>
+
+    <div class="content active" id="tab-gastos"><div id="gastos-html">Cargando...</div></div>
+    <div class="content" id="tab-fic"><div id="fic-html">Cargando...</div></div>
+    <div class="content" id="tab-tarjeta"><div id="tarjeta-html">Cargando...</div></div>
+    <div class="content" id="tab-deudas"><div id="deudas-html">Cargando...</div></div>
+
+    <button class="fab" onclick="fabClick()">+</button>
 
     <script>
-        // ⚠️ REEMPLAZA CON TUS DATOS DE SUPABASE
-        const SUPABASE_URL = 'https://tfpdnhhibfdcntrswrqk.supabase.co'; // ← TU URL
-        const SUPABASE_KEY = 'sb_publishable_ObW3lxBbtUH4Og41KN3hGQ_Dswv7Ocz'; // ← ¡CAMBIA ESTO! Pon tu anon key
+        // ⚡ TUS CREDENCIALES CORRECTAS
+        const SB_URL = 'https://tfpdnhhibfdcntrswrqk.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmcGRuaGhpYmZkY250cnN3cnFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NjQ1NzEsImV4cCI6MjA5NDQ0MDU3MX0.72CGDUh07MG1FiU6ENQS5Su1lUR0Pb4rEDaJr_UwMXk';
         
-        const sb = window.supabase.createClient(SB_URL, SB_KEY);
-        
+        const sb = supabase.createClient(SB_URL, SB_KEY);
         let currentTab = 'gastos';
-        let editId = null;
 
-        function fmt(n) { return '$ ' + Number(n).toLocaleString('es-CO', {minimumFractionDigits:2}); }
-        function fmtDate(d) {
-            if (!d) return '';
-            return new Date(d + 'T00:00:00').toLocaleDateString('es-CO', {day:'2-digit', month:'2-digit', year:'numeric'});
-        }
+        // FORMATO
+        const fm = n => '$ ' + Number(n).toLocaleString('es-CO',{minimumFractionDigits:2});
+        const fd = d => d ? new Date(d+'T00:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
 
-        // Operaciones CRUD
-        async function getAll(table) {
-            const { data } = await supabase.from(table).select('*').order('id', {ascending: false});
-            return data || [];
-        }
-        async function addRecord(table, record) {
-            await supabase.from(table).insert(record);
-        }
-        async function updateRecord(table, id, record) {
-            await supabase.from(table).update(record).eq('id', id);
-        }
-        async function deleteRecord(table, id) {
-            await supabase.from(table).delete().eq('id', id);
-        }
+        // CRUD
+        async function get(t) { const {data} = await sb.from(t).select('*').order('id',{ascending:false}); return data||[]; }
+        async function add(t,o) { await sb.from(t).insert(o); }
+        async function upd(t,i,o) { await sb.from(t).update(o).eq('id',i); }
+        async function del(t,i) { await sb.from(t).delete().eq('id',i); }
 
-        // Realtime
-        function subscribeAll() {
-            ['gastos','fic','tarjeta_gastos','tarjeta_deudas','deudas'].forEach(t => {
-                supabase.channel(t).on('postgres_changes', {event:'*', schema:'public', table:t}, () => {
-                    renderAll();
-                }).subscribe();
-            });
-        }
-
-        // Navegación
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                currentTab = tab.dataset.tab;
-                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById('tab-' + currentTab).classList.add('active');
-                renderAll();
-            });
+        // REALTIME
+        ['gastos','fic','tarjeta_gastos','tarjeta_deudas','deudas'].forEach(t => {
+            sb.channel(t).on('postgres_changes',{event:'*',schema:'public',table:t},() => renderAll()).subscribe();
         });
 
-        document.getElementById('fab').addEventListener('click', () => {
-            if (currentTab === 'gastos') agregarGasto();
-            else if (currentTab === 'fic') agregarFIC();
-            else if (currentTab === 'tarjeta') agregarCorte();
-            else if (currentTab === 'deudas') agregarDeuda();
-        });
+        // STATUS
+        function updateStatus() {
+            const el = document.getElementById('status');
+            if (navigator.onLine) { el.textContent = '🟢 Online'; el.style.background='#4CAF50'; }
+            else { el.textContent = '🟠 Offline'; el.style.background='#FF9800'; }
+        }
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+        updateStatus();
+
+        // TABS
+        function switchTab(t) {
+            currentTab = t;
+            document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-'+t).classList.add('active');
+            renderAll();
+        }
 
         async function renderAll() {
             if (currentTab === 'gastos') await renderGastos();
@@ -289,411 +122,304 @@
             else if (currentTab === 'deudas') await renderDeudas();
         }
 
+        function fabClick() {
+            if (currentTab === 'gastos') addGasto();
+            else if (currentTab === 'fic') addFIC();
+            else if (currentTab === 'tarjeta') addCorte();
+            else if (currentTab === 'deudas') addDeuda();
+        }
+
         // ==================== GASTOS ====================
         async function renderGastos() {
-            const data = await getAll('gastos');
-            const grupos = {};
+            const data = await get('gastos');
+            const grp = {};
             data.forEach(g => {
-                const k = `${g.mes}__${g.quincena}`;
-                if (!grupos[k]) grupos[k] = {mes: g.mes, quincena: g.quincena, items: []};
-                grupos[k].items.push(g);
+                const k = g.mes+'__'+g.quincena;
+                if (!grp[k]) grp[k] = {mes:g.mes, quincena:g.quincena, items:[]};
+                grp[k].items.push(g);
             });
-            
-            let html = '';
-            for (const g of Object.values(grupos)) {
-                const ingresos = g.items.filter(i => i.tipo==='Ingreso').reduce((s,i) => s+Number(i.monto), 0);
-                const gastos = g.items.filter(i => i.tipo==='Gasto').reduce((s,i) => s+Number(i.monto), 0);
-                html += `
-                <div class="card">
+            let h = '';
+            for (const g of Object.values(grp)) {
+                const ing = g.items.filter(i=>i.tipo==='Ingreso').reduce((s,i)=>s+Number(i.monto),0);
+                const gas = g.items.filter(i=>i.tipo==='Gasto').reduce((s,i)=>s+Number(i.monto),0);
+                h += `<div class="card">
                     <div class="card-header">
-                        <span class="card-title" onclick="editarMes('${g.mes}',${g.quincena})">📅 ${g.mes} - Quincena ${g.quincena}</span>
+                        <span class="card-title" onclick="editMes('${g.mes}',${g.quincena})">📅 ${g.mes} <span class="badge badge-q">Q${g.quincena}</span></span>
                         <div class="btn-group">
-                            <button class="btn btn-outline btn-sm" onclick="duplicarQuincena('${g.mes}',${g.quincena})">📋 Duplicar</button>
-                            <button class="btn btn-primary btn-sm" onclick="agregarGasto('${g.mes}',${g.quincena})">+ Agregar</button>
-                            <button class="btn btn-danger btn-sm" onclick="eliminarQuincena('${g.mes}',${g.quincena})">🗑</button>
+                            <button class="btn btn-outline btn-sm" onclick="dupQ('${g.mes}',${g.quincena})">📋 Duplicar</button>
+                            <button class="btn btn-blue btn-sm" onclick="addGasto('${g.mes}',${g.quincena})">+ Agregar</button>
+                            <button class="btn btn-red btn-sm" onclick="delQ('${g.mes}',${g.quincena})">🗑</button>
                         </div>
                     </div>
-                    <div style="overflow-x:auto;">
-                        <table>
-                            <tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Método</th><th>Obs</th><th></th></tr>
-                            ${g.items.map(i => `
-                                <tr class="${i.tipo==='Ingreso'?'row-ingreso':'row-gasto'}">
-                                    <td>${fmtDate(i.fecha)}</td><td>${i.tipo}</td><td>${i.categoria}</td>
-                                    <td>${fmt(i.monto)}</td><td>${i.metodo||''}</td><td>${i.obs||''}</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline" onclick="editarGasto(${i.id})">✏️</button>
-                                        <button class="btn btn-sm btn-danger" onclick="eliminarItem('gastos',${i.id})">🗑</button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                            <tr class="row-total">
-                                <td colspan="3"><strong>Totales</strong></td>
-                                <td><strong>Ing:</strong> ${fmt(ingresos)}</td>
-                                <td><strong>Gas:</strong> ${fmt(gastos)}</td>
-                                <td colspan="2"><strong>Sobra:</strong> ${fmt(ingresos-gastos)}</td>
-                            </tr>
-                        </table>
-                    </div>
+                    <div style="overflow-x:auto"><table>
+                        <tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Método</th><th>Obs</th><th></th></tr>
+                        ${g.items.map(i => `<tr class="${i.tipo==='Ingreso'?'row-in':'row-out'}">
+                            <td>${fd(i.fecha)}</td><td>${i.tipo}</td><td>${i.categoria||''}</td>
+                            <td>${fm(i.monto)}</td><td>${i.metodo||''}</td><td>${i.obs||''}</td>
+                            <td><button class="btn btn-sm btn-outline" onclick="editG(${i.id})">✏️</button>
+                            <button class="btn btn-sm btn-red" onclick="delIt('gastos',${i.id})">🗑</button></td>
+                        </tr>`).join('')}
+                        <tr class="row-total"><td colspan="3"><b>Totales</b></td><td>Ing:${fm(ing)}</td><td>Gas:${fm(gas)}</td><td colspan="2">Sobra:${fm(ing-gas)}</td></tr>
+                    </table></div>
                 </div>`;
             }
-            document.getElementById('gastos-content').innerHTML = html || '<div class="empty-state">No hay gastos. ¡Agrega el primero!</div>';
+            document.getElementById('gastos-html').innerHTML = h || '<div class="empty">No hay gastos. ¡Agrega el primero!</div>';
         }
 
-        async function agregarGasto(mes, quincena) {
+        function addGasto(mes, quincena) {
             if (!mes) { mes = prompt('Mes:'); if (!mes) return; }
             if (!quincena) { quincena = prompt('Quincena (1 o 2):'); if (!quincena) return; }
-            
-            document.getElementById('modal-content').innerHTML = `
-                <h3>Agregar Gasto - ${mes} Q${quincena}</h3>
-                <form id="form-gasto">
-                    <div class="form-group"><label>Fecha</label><input type="date" id="fecha" required></div>
-                    <div class="form-group"><label>Tipo</label><select id="tipo"><option value="Ingreso">Ingreso</option><option value="Gasto" selected>Gasto</option></select></div>
-                    <div class="form-group"><label>Categoría</label><input type="text" id="categoria" required></div>
-                    <div class="form-group"><label>Monto</label><input type="number" id="monto" required step="0.01" min="0"></div>
-                    <div class="form-group"><label>Método</label><select id="metodo"><option value="Efectivo">Efectivo</option><option value="Transferencia">Transferencia</option></select></div>
-                    <div class="form-group"><label>Observaciones</label><input type="text" id="obs"></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Guardar</button>
-                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:6px;" onclick="closeModal()">Cancelar</button>
-                </form>`;
-            
-            document.getElementById('modal-overlay').classList.add('active');
-            
-            document.getElementById('form-gasto').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await addRecord('gastos', {
-                    mes, quincena: parseInt(quincena),
-                    fecha: document.getElementById('fecha').value,
-                    tipo: document.getElementById('tipo').value,
-                    categoria: document.getElementById('categoria').value,
-                    monto: parseFloat(document.getElementById('monto').value),
-                    metodo: document.getElementById('metodo').value,
-                    obs: document.getElementById('obs').value
-                });
-                closeModal();
-                await renderGastos();
-            });
+            const cat = prompt('Categoría:');
+            if (!cat) return;
+            const monto = parseFloat(prompt('Monto:'));
+            if (!monto) return;
+            const tipo = confirm('¿Ingreso? (Aceptar=Sí, Cancelar=Gasto)') ? 'Ingreso' : 'Gasto';
+            add('gastos', { mes, quincena:parseInt(quincena), fecha:new Date().toISOString().split('T')[0], tipo, categoria:cat, monto, metodo:'Efectivo', obs:'' });
+            renderAll();
         }
 
-        async function editarGasto(id) {
-            const { data } = await supabase.from('gastos').select('*').eq('id', id).single();
+        async function editG(id) {
+            const {data} = await sb.from('gastos').select('*').eq('id',id).single();
             if (!data) return;
-            
-            document.getElementById('modal-content').innerHTML = `
-                <h3>Editar Gasto</h3>
-                <form id="form-edit">
-                    <div class="form-group"><label>Fecha</label><input type="date" id="fecha" value="${data.fecha||''}" required></div>
-                    <div class="form-group"><label>Tipo</label><select id="tipo"><option value="Ingreso" ${data.tipo==='Ingreso'?'selected':''}>Ingreso</option><option value="Gasto" ${data.tipo==='Gasto'?'selected':''}>Gasto</option></select></div>
-                    <div class="form-group"><label>Categoría</label><input type="text" id="categoria" value="${data.categoria||''}" required></div>
-                    <div class="form-group"><label>Monto</label><input type="number" id="monto" value="${data.monto}" required step="0.01" min="0"></div>
-                    <div class="form-group"><label>Método</label><select id="metodo"><option value="Efectivo" ${data.metodo==='Efectivo'?'selected':''}>Efectivo</option><option value="Transferencia" ${data.metodo==='Transferencia'?'selected':''}>Transferencia</option></select></div>
-                    <div class="form-group"><label>Observaciones</label><input type="text" id="obs" value="${data.obs||''}"></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Actualizar</button>
-                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:6px;" onclick="closeModal()">Cancelar</button>
-                </form>`;
-            
-            document.getElementById('modal-overlay').classList.add('active');
-            
-            document.getElementById('form-edit').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await updateRecord('gastos', id, {
-                    fecha: document.getElementById('fecha').value,
-                    tipo: document.getElementById('tipo').value,
-                    categoria: document.getElementById('categoria').value,
-                    monto: parseFloat(document.getElementById('monto').value),
-                    metodo: document.getElementById('metodo').value,
-                    obs: document.getElementById('obs').value
-                });
-                closeModal();
-                await renderGastos();
-            });
+            const cat = prompt('Categoría:', data.categoria);
+            if (!cat) return;
+            const monto = parseFloat(prompt('Monto:', data.monto));
+            if (!monto) return;
+            await upd('gastos', id, { categoria:cat, monto });
+            renderAll();
         }
 
-        async function duplicarQuincena(mes, quincena) {
-            const nuevoMes = prompt('Nombre del nuevo mes:');
-            if (!nuevoMes) return;
-            const data = await getAll('gastos');
+        async function dupQ(mes, quincena) {
+            const nm = prompt('Nuevo mes:');
+            if (!nm) return;
+            const data = await get('gastos');
             for (const g of data) {
                 if (g.mes === mes && g.quincena === quincena) {
-                    const { id, created_at, ...nuevo } = g;
-                    nuevo.mes = nuevoMes;
-                    await addRecord('gastos', nuevo);
+                    const {id, created_at, ...n} = g;
+                    n.mes = nm;
+                    await add('gastos', n);
                 }
             }
-            await renderAll();
+            renderAll();
         }
 
-        async function eliminarQuincena(mes, quincena) {
-            if (!confirm(`¿Eliminar TODA la quincena ${quincena} de ${mes}?`)) return;
-            const data = await getAll('gastos');
+        async function delQ(mes, quincena) {
+            if (!confirm('¿Eliminar TODA la quincena '+quincena+' de '+mes+'?')) return;
+            const data = await get('gastos');
             for (const g of data) {
-                if (g.mes === mes && g.quincena === quincena) {
-                    await deleteRecord('gastos', g.id);
-                }
+                if (g.mes === mes && g.quincena === quincena) await del('gastos', g.id);
             }
-            await renderAll();
+            renderAll();
         }
 
-        async function editarMes(mes, quincena) {
-            const nuevoMes = prompt('Nuevo nombre del mes:', mes);
-            if (!nuevoMes || nuevoMes === mes) return;
-            const data = await getAll('gastos');
+        async function editMes(mes, quincena) {
+            const nm = prompt('Nuevo nombre:', mes);
+            if (!nm || nm === mes) return;
+            const data = await get('gastos');
             for (const g of data) {
-                if (g.mes === mes && g.quincena === quincena) {
-                    await updateRecord('gastos', g.id, { mes: nuevoMes });
-                }
+                if (g.mes === mes && g.quincena === quincena) await upd('gastos', g.id, {mes:nm});
             }
-            await renderAll();
+            renderAll();
         }
 
         // ==================== FIC ====================
         async function renderFIC() {
-            const data = await getAll('fic');
-            const total = data.reduce((s, i) => s + Number(i.monto), 0);
-            let html = `
-            <div class="card">
-                <div class="card-header"><span class="card-title">🏦 FIC</span><button class="btn btn-primary btn-sm" onclick="agregarFIC()">+ Agregar</button></div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">`;
-            
+            const data = await get('fic');
+            const total = data.reduce((s,i) => s+Number(i.monto), 0);
+            let h = `<div class="card"><div class="card-header"><span class="card-title">🏦 FIC</span><button class="btn btn-blue btn-sm" onclick="addFIC()">+ Agregar</button></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">`;
             data.forEach(i => {
-                html += `
-                <div style="background:#F8FAFE;padding:12px;border-radius:8px;text-align:center;border:2px solid #D2E0F0;">
+                h += `<div style="background:#F8FAFE;padding:12px;border-radius:8px;text-align:center;border:2px solid #D2E0F0;">
                     <div style="font-size:0.7em;color:#5F6B7A;">${i.concepto}</div>
-                    <div style="font-size:1.1em;font-weight:700;color:#0D904F;">${fmt(i.monto)}</div>
+                    <div style="font-size:1.1em;font-weight:700;color:#0D904F;">${fm(i.monto)}</div>
                     <div style="margin-top:4px;">
-                        <button class="btn btn-sm btn-outline" onclick="editarFIC(${i.id})">✏️</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarItem('fic',${i.id})">🗑</button>
-                    </div>
-                </div>`;
+                        <button class="btn btn-sm btn-outline" onclick="editFIC(${i.id})">✏️</button>
+                        <button class="btn btn-sm btn-red" onclick="delIt('fic',${i.id})">🗑</button>
+                    </div></div>`;
             });
-            
-            html += `</div><hr><div style="text-align:center;font-size:1.2em;"><strong>Total:</strong> ${fmt(total)}</div></div>`;
-            document.getElementById('fic-content').innerHTML = html;
+            h += `</div><hr><div style="text-align:center;font-size:1.1em;"><b>Total FIC:</b> ${fm(total)}</div></div>`;
+            document.getElementById('fic-html').innerHTML = h;
         }
 
-        async function agregarFIC() {
-            const concepto = prompt('Concepto:');
-            if (!concepto) return;
-            const monto = parseFloat(prompt('Monto:'));
-            if (!monto) return;
-            await addRecord('fic', { concepto, monto });
-            await renderAll();
+        function addFIC() {
+            const c = prompt('Concepto:');
+            if (!c) return;
+            const m = parseFloat(prompt('Monto:'));
+            if (!m) return;
+            add('fic', {concepto:c, monto:m});
+            renderAll();
         }
 
-        async function editarFIC(id) {
-            const { data } = await supabase.from('fic').select('*').eq('id', id).single();
+        async function editFIC(id) {
+            const {data} = await sb.from('fic').select('*').eq('id',id).single();
             if (!data) return;
-            const concepto = prompt('Concepto:', data.concepto);
-            if (!concepto) return;
-            const monto = parseFloat(prompt('Monto:', data.monto));
-            if (!monto) return;
-            await updateRecord('fic', id, { concepto, monto });
-            await renderAll();
+            const c = prompt('Concepto:', data.concepto);
+            if (!c) return;
+            const m = parseFloat(prompt('Monto:', data.monto));
+            if (!m) return;
+            await upd('fic', id, {concepto:c, monto:m});
+            renderAll();
         }
 
         // ==================== TARJETA ====================
         async function renderTarjeta() {
-            const gastos = await getAll('tarjeta_gastos');
-            const deudas = await getAll('tarjeta_deudas');
-            
+            const gastos = await get('tarjeta_gastos');
+            const deudas = await get('tarjeta_deudas');
             const cortes = {};
             gastos.forEach(g => {
-                if (!cortes[g.corte]) cortes[g.corte] = {gastos:[], deudas:[]};
+                if (!cortes[g.corte]) cortes[g.corte] = {gastos:[],deudas:[]};
                 cortes[g.corte].gastos.push(g);
             });
             deudas.forEach(d => {
-                if (!cortes[d.corte]) cortes[d.corte] = {gastos:[], deudas:[]};
+                if (!cortes[d.corte]) cortes[d.corte] = {gastos:[],deudas:[]};
                 cortes[d.corte].deudas.push(d);
             });
-
-            let html = '';
-            for (const [corte, data] of Object.entries(cortes)) {
-                const totalGastado = data.gastos.filter(g=>g.tipo==='Gasto').reduce((s,g)=>s+Number(g.monto),0);
-                const totalAhorrado = data.gastos.filter(g=>g.tipo==='Ahorro').reduce((s,g)=>s+Number(g.monto),0);
-                const deudasAFavor = data.deudas.filter(d=>d.estado==='Debe').reduce((s,d)=>s+Number(d.monto),0);
-                const deudasPagadas = data.deudas.filter(d=>d.estado==='Pago').reduce((s,d)=>s+Number(d.monto),0);
-                
-                html += `
-                <div class="card">
+            let h = '';
+            for (const [corte, dt] of Object.entries(cortes)) {
+                const tg = dt.gastos.filter(g=>g.tipo==='Gasto').reduce((s,g)=>s+Number(g.monto),0);
+                const ta = dt.gastos.filter(g=>g.tipo==='Ahorro').reduce((s,g)=>s+Number(g.monto),0);
+                const df = dt.deudas.filter(d=>d.estado==='Debe').reduce((s,d)=>s+Number(d.monto),0);
+                h += `<div class="card">
                     <div class="card-header">
-                        <span class="card-title">💳 ${corte}</span>
+                        <span class="card-title">💳 ${corte} <span class="badge badge-q">Límite: 9</span></span>
                         <div class="btn-group">
-                            <button class="btn btn-outline btn-sm" onclick="duplicarCorte('${corte}')">📋</button>
-                            <button class="btn btn-primary btn-sm" onclick="agregarGastoTarjeta('${corte}')">+ Gasto</button>
-                            <button class="btn btn-primary btn-sm" onclick="agregarDeudaTarjeta('${corte}')">+ Deuda</button>
-                            <button class="btn btn-danger btn-sm" onclick="eliminarCorte('${corte}')">🗑</button>
+                            <button class="btn btn-outline btn-sm" onclick="dupC('${corte}')">📋 Duplicar</button>
+                            <button class="btn btn-blue btn-sm" onclick="addGT('${corte}')">+ Gasto</button>
+                            <button class="btn btn-blue btn-sm" onclick="addDT('${corte}')">+ Deuda</button>
+                            <button class="btn btn-red btn-sm" onclick="delC('${corte}')">🗑</button>
                         </div>
                     </div>
                     <table>
                         <tr><th>Tipo</th><th>Concepto</th><th>Monto</th><th></th></tr>
-                        ${data.gastos.map(g => `
-                            <tr><td>${g.tipo}</td><td>${g.concepto}</td><td>${fmt(g.monto)}</td>
-                            <td><button class="btn btn-sm btn-outline" onclick="editarGastoTarjeta(${g.id})">✏️</button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarItem('tarjeta_gastos',${g.id})">🗑</button></td></tr>
-                        `).join('')}
+                        ${dt.gastos.map(g => `<tr>
+                            <td>${g.tipo}</td><td>${g.concepto}</td><td>${fm(g.monto)}</td>
+                            <td><button class="btn btn-sm btn-outline" onclick="editGT(${g.id})">✏️</button>
+                            <button class="btn btn-sm btn-red" onclick="delIt('tarjeta_gastos',${g.id})">🗑</button></td>
+                        </tr>`).join('')}
                     </table>
-                    <h4 style="margin-top:8px;">Deudas:</h4>
-                    ${data.deudas.map(d => `
-                        <div class="deuda-item ${d.estado==='Pago'?'pagado':''}">
-                            <span>${d.persona} - ${fmt(d.monto)}</span>
-                            <div>
-                                <span class="badge ${d.estado==='Pago'?'badge-success':'badge-danger'}">${d.estado}</span>
-                                <button class="btn btn-sm btn-outline" onclick="toggleDeuda(${d.id})">🔄</button>
-                                <button class="btn btn-sm btn-danger" onclick="eliminarItem('tarjeta_deudas',${d.id})">🗑</button>
-                            </div>
+                    <h4 style="margin:8px 0;color:#5F6B7A;">👥 Deudas:</h4>
+                    ${dt.deudas.map(d => `<div class="deuda-item ${d.estado==='Pago'?'pagado':''}">
+                        <span><b>${d.persona}</b> - ${fm(d.monto)}</span>
+                        <div>
+                            <span class="badge ${d.estado==='Pago'?'badge-ok':'badge-no'}">${d.estado}</span>
+                            <button class="btn btn-sm btn-outline" onclick="togDT(${d.id})">🔄</button>
+                            <button class="btn btn-sm btn-red" onclick="delIt('tarjeta_deudas',${d.id})">🗑</button>
                         </div>
-                    `).join('')}
+                    </div>`).join('')}
                     <div class="summary-grid">
-                        <div class="summary-item"><h4>Total Gastado</h4><div class="val negative">${fmt(totalGastado)}</div></div>
-                        <div class="summary-item"><h4>Total Ahorrado</h4><div class="val positive">${fmt(totalAhorrado)}</div></div>
-                        <div class="summary-item"><h4>Deudas a favor</h4><div class="val">${fmt(deudasAFavor)}</div></div>
-                        <div class="summary-item"><h4>Hace Falta</h4><div class="val ${totalGastado-totalAhorrado-deudasAFavor<=0?'positive':'negative'}">${fmt(totalGastado-totalAhorrado-deudasAFavor)}</div></div>
+                        <div class="summary-item"><h4>Total Gastado</h4><div class="val val-red">${fm(tg)}</div></div>
+                        <div class="summary-item"><h4>Total Ahorrado</h4><div class="val val-green">${fm(ta)}</div></div>
+                        <div class="summary-item"><h4>Deudas a favor</h4><div class="val">${fm(df)}</div></div>
+                        <div class="summary-item"><h4>Hace Falta</h4><div class="val ${tg-ta-df<=0?'val-green':'val-red'}">${fm(tg-ta-df)}</div></div>
                     </div>
                 </div>`;
             }
-            document.getElementById('tarjeta-content').innerHTML = html || '<div class="empty-state">No hay cortes de tarjeta</div>';
+            document.getElementById('tarjeta-html').innerHTML = h || '<div class="empty">No hay cortes de tarjeta</div>';
         }
 
-        async function agregarCorte() {
-            const nombre = prompt('Nombre del corte (ej: Febrero 2026):');
-            if (!nombre) return;
-            await addRecord('tarjeta_gastos', { corte: nombre, tipo: 'Gasto', concepto: 'Total Gastado', monto: 0 });
-            await renderAll();
+        function addCorte() {
+            const n = prompt('Nombre del corte (ej: Febrero 2026):');
+            if (!n) return;
+            add('tarjeta_gastos', {corte:n, tipo:'Gasto', concepto:'Total Gastado', monto:0});
+            renderAll();
         }
-
-        async function duplicarCorte(corte) {
-            const nuevo = prompt('Nuevo nombre:');
-            if (!nuevo) return;
-            const gastos = await getAll('tarjeta_gastos');
-            const deudas = await getAll('tarjeta_deudas');
-            for (const g of gastos) {
-                if (g.corte === corte) {
-                    const { id, created_at, ...n } = g;
-                    n.corte = nuevo;
-                    await addRecord('tarjeta_gastos', n);
-                }
-            }
-            for (const d of deudas) {
-                if (d.corte === corte) {
-                    const { id, created_at, ...n } = d;
-                    n.corte = nuevo;
-                    await addRecord('tarjeta_deudas', n);
-                }
-            }
-            await renderAll();
+        function addGT(corte) {
+            const c = prompt('Concepto:');
+            if (!c) return;
+            const m = parseFloat(prompt('Monto:'));
+            if (!m) return;
+            const t = confirm('¿Ahorro?') ? 'Ahorro' : 'Gasto';
+            add('tarjeta_gastos', {corte, tipo:t, concepto:c, monto:m});
+            renderAll();
         }
-
-        async function eliminarCorte(corte) {
-            if (!confirm(`¿Eliminar corte "${corte}"?`)) return;
-            const gastos = await getAll('tarjeta_gastos');
-            const deudas = await getAll('tarjeta_deudas');
-            for (const g of gastos) if (g.corte === corte) await deleteRecord('tarjeta_gastos', g.id);
-            for (const d of deudas) if (d.corte === corte) await deleteRecord('tarjeta_deudas', d.id);
-            await renderAll();
-        }
-
-        async function agregarGastoTarjeta(corte) {
-            const concepto = prompt('Concepto:');
-            if (!concepto) return;
-            const monto = parseFloat(prompt('Monto:'));
-            if (!monto) return;
-            const tipo = confirm('¿Es Ahorro?') ? 'Ahorro' : 'Gasto';
-            await addRecord('tarjeta_gastos', { corte, tipo, concepto, monto });
-            await renderAll();
-        }
-
-        async function editarGastoTarjeta(id) {
-            const { data } = await supabase.from('tarjeta_gastos').select('*').eq('id', id).single();
+        async function editGT(id) {
+            const {data} = await sb.from('tarjeta_gastos').select('*').eq('id',id).single();
             if (!data) return;
-            const concepto = prompt('Concepto:', data.concepto);
-            if (!concepto) return;
-            const monto = parseFloat(prompt('Monto:', data.monto));
-            if (!monto) return;
-            await updateRecord('tarjeta_gastos', id, { concepto, monto });
-            await renderAll();
+            const c = prompt('Concepto:', data.concepto);
+            if (!c) return;
+            const m = parseFloat(prompt('Monto:', data.monto));
+            if (!m) return;
+            await upd('tarjeta_gastos', id, {concepto:c, monto:m});
+            renderAll();
         }
-
-        async function agregarDeudaTarjeta(corte) {
-            const persona = prompt('Persona:');
-            if (!persona) return;
-            const monto = parseFloat(prompt('Monto:'));
-            if (!monto) return;
-            const estado = confirm('¿Pagado?') ? 'Pago' : 'Debe';
-            await addRecord('tarjeta_deudas', { corte, persona, monto, estado });
-            await renderAll();
+        function addDT(corte) {
+            const p = prompt('Persona:');
+            if (!p) return;
+            const m = parseFloat(prompt('Monto:'));
+            if (!m) return;
+            const e = confirm('¿Pagado?') ? 'Pago' : 'Debe';
+            add('tarjeta_deudas', {corte, persona:p, monto:m, estado:e});
+            renderAll();
         }
-
-        async function toggleDeuda(id) {
-            const { data } = await supabase.from('tarjeta_deudas').select('*').eq('id', id).single();
+        async function togDT(id) {
+            const {data} = await sb.from('tarjeta_deudas').select('*').eq('id',id).single();
             if (!data) return;
-            await updateRecord('tarjeta_deudas', id, { estado: data.estado === 'Pago' ? 'Debe' : 'Pago' });
-            await renderAll();
+            await upd('tarjeta_deudas', id, {estado:data.estado==='Pago'?'Debe':'Pago'});
+            renderAll();
+        }
+        async function dupC(corte) {
+            const nm = prompt('Nuevo nombre:');
+            if (!nm) return;
+            const gs = await get('tarjeta_gastos');
+            const ds = await get('tarjeta_deudas');
+            for (const g of gs) if (g.corte === corte) {
+                const {id, created_at, ...n} = g; n.corte = nm; await add('tarjeta_gastos', n);
+            }
+            for (const d of ds) if (d.corte === corte) {
+                const {id, created_at, ...n} = d; n.corte = nm; await add('tarjeta_deudas', n);
+            }
+            renderAll();
+        }
+        async function delC(corte) {
+            if (!confirm('¿Eliminar corte '+corte+'?')) return;
+            const gs = await get('tarjeta_gastos');
+            const ds = await get('tarjeta_deudas');
+            for (const g of gs) if (g.corte === corte) await del('tarjeta_gastos', g.id);
+            for (const d of ds) if (d.corte === corte) await del('tarjeta_deudas', d.id);
+            renderAll();
         }
 
         // ==================== DEUDAS GENERALES ====================
         async function renderDeudas() {
-            const data = await getAll('deudas');
-            let html = '';
+            const data = await get('deudas');
+            let h = '';
             data.forEach(d => {
-                html += `
-                <div class="deuda-item ${d.estado==='Pago'?'pagado':''}">
-                    <span><strong>${d.persona}</strong> - ${fmt(d.monto)}</span>
+                h += `<div class="deuda-item ${d.estado==='Pago'?'pagado':''}">
+                    <span><b>${d.persona}</b> - ${fm(d.monto)}</span>
                     <div>
-                        <span class="badge ${d.estado==='Pago'?'badge-success':'badge-danger'}">${d.estado}</span>
-                        <button class="btn btn-sm btn-outline" onclick="toggleDeudaGeneral(${d.id})">🔄</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarItem('deudas',${d.id})">🗑</button>
+                        <span class="badge ${d.estado==='Pago'?'badge-ok':'badge-no'}">${d.estado}</span>
+                        <button class="btn btn-sm btn-outline" onclick="togDG(${d.id})">🔄</button>
+                        <button class="btn btn-sm btn-red" onclick="delIt('deudas',${d.id})">🗑</button>
                     </div>
                 </div>`;
             });
-            document.getElementById('deudas-content').innerHTML = html || '<div class="empty-state">No hay deudas</div>';
+            document.getElementById('deudas-html').innerHTML = h || '<div class="empty">No hay deudas</div>';
         }
-
-        async function agregarDeuda() {
-            const persona = prompt('Persona:');
-            if (!persona) return;
-            const monto = parseFloat(prompt('Monto:'));
-            if (!monto) return;
-            const estado = confirm('¿Pagado?') ? 'Pago' : 'Debe';
-            await addRecord('deudas', { persona, monto, estado });
-            await renderAll();
+        function addDeuda() {
+            const p = prompt('Persona:');
+            if (!p) return;
+            const m = parseFloat(prompt('Monto:'));
+            if (!m) return;
+            const e = confirm('¿Pagado?') ? 'Pago' : 'Debe';
+            add('deudas', {persona:p, monto:m, estado:e});
+            renderAll();
         }
-
-        async function toggleDeudaGeneral(id) {
-            const { data } = await supabase.from('deudas').select('*').eq('id', id).single();
+        async function togDG(id) {
+            const {data} = await sb.from('deudas').select('*').eq('id',id).single();
             if (!data) return;
-            await updateRecord('deudas', id, { estado: data.estado === 'Pago' ? 'Debe' : 'Pago' });
-            await renderAll();
+            await upd('deudas', id, {estado:data.estado==='Pago'?'Debe':'Pago'});
+            renderAll();
         }
 
-        async function eliminarItem(table, id) {
+        async function delIt(table, id) {
             if (confirm('¿Eliminar?')) {
-                await deleteRecord(table, id);
-                await renderAll();
+                await del(table, id);
+                renderAll();
             }
         }
 
-        // ==================== MODAL ====================
-        function closeModal() {
-            document.getElementById('modal-overlay').classList.remove('active');
-        }
-        document.getElementById('modal-overlay').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        // ==================== INICIAR ====================
-        async function init() {
-            subscribeAll();
-            await renderAll();
-            
-            // Status online/offline
-            function updateStatus() {
-                document.getElementById('sync-status').textContent = navigator.onLine ? '🟢 Online' : '🟠 Offline';
-            }
-            window.addEventListener('online', updateStatus);
-            window.addEventListener('offline', updateStatus);
-            updateStatus();
-        }
-
-        init();
+        // INICIAR
+        renderAll();
     </script>
 </body>
 </html>
