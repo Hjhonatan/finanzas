@@ -228,7 +228,7 @@
         const SUPABASE_URL = 'https://tfpdnhhibfdcntrswrqk.supabase.co'; // ← TU URL
         const SUPABASE_KEY = 'sb_publishable_ObW3lxBbtUH4Og41KN3hGQ_Dswv7Ocz'; // ← ¡CAMBIA ESTO! Pon tu anon key
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = window.supabase.createClient(SB_URL, SB_KEY);
         
         let currentTab = 'gastos';
         let editId = null;
