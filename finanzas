@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#FF8C42">
+    <title>Finanzas App</title>
+    <style>
+        :root {
+            --bg: #FFF5EE;
+            --card-bg: #FFFFFF;
+            --primary: #FF8C42;
+            --primary-dark: #E67A2E;
+            --secondary: #FFB380;
+            --success: #4CAF50;
+            --danger: #EF5350;
+            --info: #2196F3;
+            --text: #4A3728;
+            --text-light: #8B7355;
+            --border: #F0D9C0;
+            --shadow: 0 4px 12px rgba(255, 140, 66, 0.15);
+            --radius: 16px;
+            --transition: 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 90px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.3);
+        }
+        .app-header h1 { font-size: 1.3em; font-weight: 600; }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            margin: 10px 14px;
+            border-radius: 12px;
+            padding: 4px;
+            box-shadow: var(--shadow);
+            gap: 4px;
+            overflow-x: auto;
+        }
+        .nav-tab {
+            flex: 1;
+            min-width: fit-content;
+            padding: 10px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .nav-tab.active { background: var(--primary); color: white; }
+
+        .tab-content { display: none; padding: 0 14px; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 1.05em;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .badge {
+            font-size: 0.7em;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .badge-primary { background: #FFF0E6; color: var(--primary); }
+        .badge-success { background: #E8F5E9; color: #2E7D32; }
+        .badge-danger { background: #FFEBEE; color: #C62828; }
+        .badge-warning { background: #FFF3E0; color: #E65100; }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8em;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-sm { padding: 4px 8px; font-size: 0.7em; border-radius: 8px; }
+        .btn:active { transform: scale(0.95); }
+        .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .table-container { overflow-x: auto; border-radius: 10px; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75em; min-width: 650px; }
+        th {
+            background: #FFF0E6;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+        td { padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        .row-ingreso { background: #F1F8E9; }
+        .row-gasto { background: #FFF8F0; }
+        .row-total { font-weight: 700; background: #FFF0E6; }
+        .row-sobra { font-weight: 700; background: #E8F5E9; color: #2E7D32; }
+        .row-deficit { font-weight: 700; background: #FFEBEE; color: #C62828; }
+
+        .fic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .fic-item {
+            background: linear-gradient(135deg, #FFF8F0, #FFF0E6);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            border: 2px solid #F0D9C0;
+        }
+        .fic-item .label { font-size: 0.7em; color: var(--text-light); text-transform: uppercase; }
+        .fic-item .amount { font-size: 1.2em; font-weight: 700; margin-top: 4px; }
+        .fic-item .amount.positive { color: #2E7D32; }
+        .fic-item .amount.negative { color: var(--danger); }
+
+        .deuda-item {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .deuda-item.pagado { border-left-color: var(--success); opacity: 0.85; }
+        .deuda-item.debe { border-left-color: var(--danger); }
+        .deuda-info { flex: 1; min-width: 130px; }
+        .deuda-nombre { font-weight: 600; font-size: 0.85em; }
+        .deuda-monto { font-weight: 700; color: var(--primary); font-size: 0.95em; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .summary-item {
+            background: #FFF8F0;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .summary-item h4 { font-size: 0.65em; color: var(--text-light); text-transform: uppercase; }
+        .summary-item .val { font-size: 1.1em; font-weight: 700; }
+        .val.positive { color: #2E7D32; }
+        .val.negative { color: var(--danger); }
+        .val.neutral { color: var(--primary); }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal h3 { margin-bottom: 14px; color: var(--primary); }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.78em; font-weight: 600; margin-bottom: 4px; color: var(--text-light); }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9em;
+            background: #FFFAF5;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.8em;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 140, 66, 0.4);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .fab:active { transform: scale(0.9); }
+        .fab.hidden { display: none; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
+        .empty-state .icon { font-size: 3em; margin-bottom: 10px; }
+
+        hr { border: none; border-top: 2px dashed var(--border); margin: 16px 0; }
+
+        @media (max-width: 400px) {
+            .nav-tab { font-size: 0.7em; padding: 8px 6px; }
+            .summary-grid, .fic-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1>💰 Finanzas Personales</h1>
+    </header>
+
+    <nav class="nav-tabs" id="nav-tabs">
+        <button class="nav-tab active" data-tab="gastos">📊 Gastos</button>
+        <button class="nav-tab" data-tab="fic">🏦 FIC</button>
+        <button class="nav-tab" data-tab="tarjeta">💳 Tarjeta</button>
+        <button class="nav-tab" data-tab="deudas">👥 Deudas</button>
+    </nav>
+
+    <!-- GASTOS -->
+    <div class="tab-content active" id="tab-gastos"><div id="gastos-container"></div></div>
+
+    <!-- FIC -->
+    <div class="tab-content" id="tab-fic"><div id="fic-container"></div></div>
+
+    <!-- TARJETA DE CRÉDITO -->
+    <div class="tab-content" id="tab-tarjeta"><div id="tarjeta-container"></div></div>
+
+    <!-- DEUDAS GENERALES -->
+    <div class="tab-content" id="tab-deudas"><div id="deudas-container"></div></div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal-content"></div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" id="fab" title="Agregar">+</button>
+
+    <script>
+        // ==================== DATABASE ====================
+        const DB_NAME = 'FinanzasDB_v2';
+        const DB_VERSION = 1;
+        let db;
+        let currentTab = 'gastos';
+        let editId = null;
+        let currentModalType = null;
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('gastos')) db.createObjectStore('gastos', { keyPath: 'id', autoIncrement: true });
+                    if (!db.objectStoreNames.contains('fic')) db.createObjectStore('fic', { keyPath: 'id', autoIncrement: true });
+                    if (!db.objectStoreNames.contains('tarjeta_gastos')) db.createObjectStore('tarjeta_gastos', { keyPath: 'id', autoIncrement: true });
+                    if (!db.objectStoreNames.contains('tarjeta_deudas')) db.createObjectStore('tarjeta_deudas', { keyPath: 'id', autoIncrement: true });
+                    if (!db.objectStoreNames.contains('deudas')) db.createObjectStore('deudas', { keyPath: 'id', autoIncrement: true });
+                };
+                req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        function dbOp(store, mode) { return db.transaction(store, mode).objectStore(store); }
+
+        async function dbAdd(store, data) {
+            return new Promise((resolve, reject) => {
+                const req = dbOp(store, 'readwrite').add(data);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+        async function dbPut(store, data) {
+            return new Promise((resolve, reject) => {
+                const req = dbOp(store, 'readwrite').put(data);
+                req.onsuccess = () => resolve();
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+        async function dbGetAll(store) {
+            return new Promise((resolve, reject) => {
+                const req = dbOp(store, 'readonly').getAll();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+        async function dbDelete(store, id) {
+            return new Promise((resolve, reject) => {
+                const req = dbOp(store, 'readwrite').delete(id);
+                req.onsuccess = () => resolve();
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+        async function dbClear(store) {
+            return new Promise((resolve, reject) => {
+                const req = dbOp(store, 'readwrite').clear();
+                req.onsuccess = () => resolve();
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        // ==================== FORMAT ====================
+        function fmt(n) { return '$ ' + Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function fmtDate(d) {
+            if (!d) return '';
+            const dt = new Date(d + 'T00:00:00');
+            return dt.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // ==================== INIT ====================
+        async function init() {
+            await openDB();
+            await cargarDatosIniciales();
+            await renderAll();
+            setupNav();
+            setupFAB();
+        }
+
+        async function cargarDatosIniciales() {
+            // Gastos iniciales
+            const gastos = await dbGetAll('gastos');
+            if (gastos.length === 0) {
+                const data = [
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Ingreso', categoria: 'Salario', monto: 1116000, metodo: 'Transferencia', obs: 'Salario Quincenal' },
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Gasto', categoria: 'Celular', monto: 500000, metodo: 'Transferencia', obs: '4/5' },
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Gasto', categoria: 'Gasolina', monto: 30000, metodo: 'Efectivo', obs: 'Bolsillo Tarjeta' },
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Gasto', categoria: 'Gas', monto: 96640, metodo: 'Efectivo', obs: 'Pagar recibo' },
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Gasto', categoria: 'Agua', monto: 75810, metodo: 'Efectivo', obs: 'Pagar recibo' },
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Gasto', categoria: 'Plan celular fin de mes', monto: 15000, metodo: 'Efectivo', obs: 'Bolsillo Tarjeta' },
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Gasto', categoria: 'Moto Mantenimiento', monto: 50000, metodo: 'Efectivo', obs: 'UALA' },
+                    { mes: 'Mayo', quincena: 1, fecha: '2026-05-15', tipo: 'Gasto', categoria: 'Internet', monto: 22500, metodo: 'Efectivo', obs: 'Ahorro Final de mes' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Ingreso', categoria: 'Salario', monto: 1116000, metodo: 'Transferencia', obs: 'Salario Quincenal' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Gasto', categoria: 'Cuota Moto', monto: 537000, metodo: 'Transferencia', obs: '2/16' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Gasto', categoria: 'Gasolina', monto: 30000, metodo: 'Efectivo', obs: 'Bolsillo Tarjeta' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Gasto', categoria: 'Soat', monto: 30000, metodo: 'Efectivo', obs: 'Ahorro para Soat' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Gasto', categoria: 'Cadena Mami', monto: 40000, metodo: 'Efectivo', obs: 'Pagar cadena' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Gasto', categoria: 'Plan celular fin de mes', monto: 15000, metodo: 'Efectivo', obs: 'Bolsillo Tarjeta' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Gasto', categoria: 'Moto Mantenimiento', monto: 25000, metodo: 'Efectivo', obs: 'Ahorro - FIC' },
+                    { mes: 'Mayo', quincena: 2, fecha: '2026-05-30', tipo: 'Gasto', categoria: 'Internet', monto: 22500, metodo: 'Efectivo', obs: 'Ahorro' },
+                ];
+                for (const d of data) await dbAdd('gastos', d);
+            }
+
+            // FIC inicial
+            const fic = await dbGetAll('fic');
+            if (fic.length === 0) {
+                await dbAdd('fic', { concepto: 'FIC Nu 2', monto: 1806014 });
+                await dbAdd('fic', { concepto: 'Papá', monto: 5000000 });
+                await dbAdd('fic', { concepto: 'Mamá', monto: 87500 });
+                await dbAdd('fic', { concepto: 'Abuela', monto: 500000 });
+                await dbAdd('fic', { concepto: 'Universidad', monto: 280000 });
+                await dbAdd('fic', { concepto: 'Moto', monto: 50000 });
+            }
+
+            // Tarjeta de crédito - Gastos iniciales (corte Enero)
+            const tarjetaGastos = await dbGetAll('tarjeta_gastos');
+            if (tarjetaGastos.length === 0) {
+                const tg = [
+                    { corte: 'Enero 2026', tipo: 'Gasto', concepto: 'Total Gastado', monto: 2930913 },
+                    { corte: 'Enero 2026', tipo: 'Ahorro', concepto: 'Monto Ahorrado', monto: 1806014 },
+                ];
+                for (const d of tg) await dbAdd('tarjeta_gastos', d);
+            }
+
+            // Tarjeta de crédito - Deudas iniciales
+            const tarjetaDeudas = await dbGetAll('tarjeta_deudas');
+            if (tarjetaDeudas.length === 0) {
+                const td = [
+                    { corte: 'Enero 2026', persona: 'Daniela 4/5', monto: 441000, estado: 'Debe' },
+                    { corte: 'Enero 2026', persona: 'Tia Estefania 2/3', monto: 113300, estado: 'Debe' },
+                    { corte: 'Enero 2026', persona: 'Luis Amazon', monto: 184000, estado: 'Pago' },
+                    { corte: 'Enero 2026', persona: 'Luis Amazon', monto: 165000, estado: 'Pago' },
+                    { corte: 'Enero 2026', persona: 'Tia Yolanda', monto: 433100, estado: 'Debe' },
+                    { corte: 'Enero 2026', persona: 'Chamel', monto: 122300, estado: 'Pago' },
+                    { corte: 'Enero 2026', persona: 'Hermana 1/2', monto: 162500, estado: 'Pago' },
+                    { corte: 'Enero 2026', persona: 'Jhonatan', monto: 17500, estado: 'Debe' },
+                    { corte: 'Enero 2026', persona: 'Esteban', monto: 30000, estado: 'Pago' },
+                    { corte: 'Enero 2026', persona: 'Papá 1/2', monto: 120000, estado: 'Debe' },
+                ];
+                for (const d of td) await dbAdd('tarjeta_deudas', d);
+            }
+
+            // Deudas generales
+            const deudas = await dbGetAll('deudas');
+            if (deudas.length === 0) {
+                const dg = [
+                    { persona: 'Daniela 3/5', monto: 471000, estado: 'Pago' },
+                    { persona: 'Tia Estefania 1/3', monto: 113300, estado: 'Pago' },
+                    { persona: 'Daniela Uni', monto: 286000, estado: 'Pago' },
+                ];
+                for (const d of dg) await dbAdd('deudas', d);
+            }
+        }
+
+        // ==================== NAVIGATION ====================
+        function setupNav() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    currentTab = tab.dataset.tab;
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById('tab-' + currentTab).classList.add('active');
+                    updateFAB();
+                    renderAll();
+                });
+            });
+        }
+
+        function setupFAB() {
+            document.getElementById('fab').addEventListener('click', () => {
+                if (currentTab === 'gastos') agregarGastoModal();
+                else if (currentTab === 'fic') agregarFICModal();
+                else if (currentTab === 'tarjeta') agregarTarjetaCorteModal();
+                else if (currentTab === 'deudas') agregarDeudaModal('deudas');
+            });
+        }
+
+        function updateFAB() {
+            const fab = document.getElementById('fab');
+            if (currentTab === 'gastos' || currentTab === 'fic' || currentTab === 'tarjeta' || currentTab === 'deudas') {
+                fab.classList.remove('hidden');
+            } else {
+                fab.classList.add('hidden');
+            }
+        }
+
+        async function renderAll() {
+            if (currentTab === 'gastos') await renderGastos();
+            else if (currentTab === 'fic') await renderFIC();
+            else if (currentTab === 'tarjeta') await renderTarjeta();
+            else if (currentTab === 'deudas') await renderDeudasGenerales();
+        }
+
+        // ==================== MODAL ====================
+        function openModal(html) {
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+            editId = null;
+            currentModalType = null;
+        }
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // ==================== GASTOS ====================
+        async function renderGastos() {
+            const container = document.getElementById('gastos-container');
+            const gastos = await dbGetAll('gastos');
+            const porMes = {};
+            for (const g of gastos) {
+                const key = g.mes || 'Sin mes';
+                if (!porMes[key]) porMes[key] = {};
+                if (!porMes[key][g.quincena || 1]) porMes[key][g.quincena || 1] = [];
+                porMes[key][g.quincena || 1].push(g);
+            }
+
+            const ordenMeses = ['Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
+                               'Enero','Febrero','Marzo','Abril'];
+            let html = '';
+            const meses = [...new Set([...ordenMeses.filter(m => porMes[m]), ...Object.keys(porMes).filter(m => !ordenMeses.includes(m))])];
+
+            if (meses.length === 0) {
+                html = '<div class="empty-state"><div class="icon">📭</div><p>No hay gastos. ¡Agrega uno!</p></div>';
+            }
+
+            for (const mes of meses) {
+                if (!porMes[mes]) continue;
+                for (const [q, items] of Object.entries(porMes[mes]).sort((a,b) => a[0]-b[0])) {
+                    const ingresos = items.filter(i => i.tipo === 'Ingreso').reduce((s,i) => s + i.monto, 0);
+                    const gastosT = items.filter(i => i.tipo === 'Gasto').reduce((s,i) => s + i.monto, 0);
+                    const sobra = ingresos - gastosT;
+                    html += `
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">📅 ${mes} <span class="badge badge-primary">Q${q}</span></span>
+                            <div class="btn-group">
+                                <button class="btn btn-outline btn-sm" onclick="duplicarQuincena('${mes}',${q},'gastos')">📋 Duplicar</button>
+                                <button class="btn btn-outline btn-sm" onclick="agregarGastoModal('${mes}',${q})">➕</button>
+                                <button class="btn btn-danger btn-sm" onclick="eliminarQuincena('${mes}',${q},'gastos')">🗑</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Método</th><th>Obs</th><th></th></tr></thead>
+                                <tbody>
+                                    ${items.map(i => `
+                                        <tr class="${i.tipo==='Ingreso'?'row-ingreso':'row-gasto'}">
+                                            <td>${fmtDate(i.fecha)}</td><td>${i.tipo}</td><td>${i.categoria}</td>
+                                            <td>${fmt(i.monto)}</td><td>${i.metodo||''}</td><td>${i.obs||''}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline" onclick="editarGastoModal(${i.id},'gastos')">✏️</button>
+                                                <button class="btn btn-sm btn-danger" onclick="eliminarItem(${i.id},'gastos')">🗑</button>
+                                            </td>
+                                        </tr>`).join('')}
+                                    <tr class="row-total"><td colspan="3">Totales</td><td>Ing: ${fmt(ingresos)}</td><td>Gas: ${fmt(gastosT)}</td><td colspan="2"></td></tr>
+                                    <tr class="${sobra>=0?'row-sobra':'row-deficit'}"><td colspan="3">${sobra>=0?'Sobra':'Falta'}</td><td colspan="4">${fmt(Math.abs(sobra))}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function agregarGastoModal(mes, quincena) {
+            currentModalType = 'gasto';
+            editId = null;
+            openModal(`
+                <h3>Agregar Movimiento</h3>
+                <form onsubmit="guardarGasto(event,'${mes||''}',${quincena||1})">
+                    <div class="form-group"><label>Mes</label><input type="text" id="gf-mes" value="${mes||''}" required></div>
+                    <div class="form-group"><label>Quincena</label><select id="gf-quincena"><option value="1" ${quincena==1?'selected':''}>1ra</option><option value="2" ${quincena==2?'selected':''}>2da</option></select></div>
+                    <div class="form-group"><label>Fecha</label><input type="date" id="gf-fecha" required></div>
+                    <div class="form-group"><label>Tipo</label><select id="gf-tipo" required><option value="Ingreso">Ingreso</option><option value="Gasto">Gasto</option></select></div>
+                    <div class="form-group"><label>Categoría</label><input type="text" id="gf-cat" required></div>
+                    <div class="form-group"><label>Monto</label><input type="number" id="gf-monto" required min="0" step="0.01"></div>
+                    <div class="form-group"><label>Método</label><select id="gf-metodo"><option value="Efectivo">Efectivo</option><option value="Transferencia">Transferencia</option></select></div>
+                    <div class="form-group"><label>Observaciones</label><input type="text" id="gf-obs"></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Guardar</button>
+                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">Cancelar</button>
+                </form>`);
+        }
+
+        async function guardarGasto(e, mes, quincena) {
+            e.preventDefault();
+            const data = {
+                mes: document.getElementById('gf-mes').value,
+                quincena: parseInt(document.getElementById('gf-quincena').value),
+                fecha: document.getElementById('gf-fecha').value,
+                tipo: document.getElementById('gf-tipo').value,
+                categoria: document.getElementById('gf-cat').value,
+                monto: parseFloat(document.getElementById('gf-monto').value),
+                metodo: document.getElementById('gf-metodo').value,
+                obs: document.getElementById('gf-obs').value
+            };
+            if (editId) { data.id = editId; await dbPut('gastos', data); }
+            else await dbAdd('gastos', data);
+            closeModal();
+            await renderGastos();
+        }
+
+        async function editarGastoModal(id, store) {
+            const items = await dbGetAll(store);
+            const g = items.find(x => x.id === id);
+            if (!g) return;
+            editId = id;
+            currentModalType = 'gasto';
+            openModal(`
+                <h3>Editar Movimiento</h3>
+                <form onsubmit="guardarGastoEdit(event,${id},'${store}')">
+                    <div class="form-group"><label>Mes</label><input type="text" id="gf-mes" value="${g.mes||''}" required></div>
+                    <div class="form-group"><label>Quincena</label><select id="gf-quincena"><option value="1" ${g.quincena==1?'selected':''}>1ra</option><option value="2" ${g.quincena==2?'selected':''}>2da</option></select></div>
+                    <div class="form-group"><label>Fecha</label><input type="date" id="gf-fecha" value="${g.fecha||''}" required></div>
+                    <div class="form-group"><label>Tipo</label><select id="gf-tipo" required><option value="Ingreso" ${g.tipo==='Ingreso'?'selected':''}>Ingreso</option><option value="Gasto" ${g.tipo==='Gasto'?'selected':''}>Gasto</option></select></div>
+                    <div class="form-group"><label>Categoría</label><input type="text" id="gf-cat" value="${g.categoria||g.concepto||''}" required></div>
+                    <div class="form-group"><label>Monto</label><input type="number" id="gf-monto" value="${g.monto}" required min="0" step="0.01"></div>
+                    <div class="form-group"><label>Método</label><select id="gf-metodo"><option value="Efectivo" ${g.metodo==='Efectivo'?'selected':''}>Efectivo</option><option value="Transferencia" ${g.metodo==='Transferencia'?'selected':''}>Transferencia</option></select></div>
+                    <div class="form-group"><label>Observaciones</label><input type="text" id="gf-obs" value="${g.obs||''}"></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Actualizar</button>
+                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">Cancelar</button>
+                </form>`);
+        }
+
+        async function guardarGastoEdit(e, id, store) {
+            e.preventDefault();
+            const items = await dbGetAll(store);
+            const g = items.find(x => x.id === id);
+            if (!g) return;
+            g.mes = document.getElementById('gf-mes').value;
+            g.quincena = parseInt(document.getElementById('gf-quincena').value);
+            g.fecha = document.getElementById('gf-fecha').value;
+            g.tipo = document.getElementById('gf-tipo').value;
+            g.categoria = document.getElementById('gf-cat').value;
+            if (g.concepto !== undefined) g.concepto = document.getElementById('gf-cat').value;
+            g.monto = parseFloat(document.getElementById('gf-monto').value);
+            g.metodo = document.getElementById('gf-metodo').value;
+            g.obs = document.getElementById('gf-obs').value;
+            await dbPut(store, g);
+            closeModal();
+            await renderAll();
+        }
+
+        async function eliminarItem(id, store) {
+            if (confirm('¿Eliminar este registro?')) {
+                await dbDelete(store, id);
+                await renderAll();
+            }
+        }
+
+        async function duplicarQuincena(mes, quincena, store) {
+            const nuevoMes = prompt('Nombre del nuevo mes:');
+            if (!nuevoMes) return;
+            const items = await dbGetAll(store);
+            const aDuplicar = items.filter(i => i.mes === mes && i.quincena === quincena);
+            for (const item of aDuplicar) {
+                const nuevo = { ...item };
+                delete nuevo.id;
+                nuevo.mes = nuevoMes;
+                if (nuevo.corte !== undefined) nuevo.corte = nuevoMes + ' (copia)';
+                await dbAdd(store, nuevo);
+            }
+            await renderAll();
+            alert('Duplicado a ' + nuevoMes);
+        }
+
+        async function eliminarQuincena(mes, quincena, store) {
+            if (confirm(`¿Eliminar TODA la quincena ${quincena} de ${mes}?`)) {
+                const items = await dbGetAll(store);
+                for (const item of items) {
+                    if (item.mes === mes && item.quincena === quincena) {
+                        await dbDelete(store, item.id);
+                    }
+                }
+                await renderAll();
+            }
+        }
+
+        function agregarGastoModalGenerico() {
+            const mes = prompt('Nombre del mes (ej: Agosto):');
+            if (!mes) return;
+            const q = prompt('Quincena (1 o 2):', '1');
+            if (!q || (q !== '1' && q !== '2')) return;
+            agregarGastoModal(mes, parseInt(q));
+        }
+
+        // ==================== FIC ====================
+        async function renderFIC() {
+            const container = document.getElementById('fic-container');
+            const items = await dbGetAll('fic');
+            const total = items.reduce((s, i) => s + i.monto, 0);
+
+            let html = `
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🏦 Fondo de Inversión Colectiva</span>
+                    <button class="btn btn-outline btn-sm" onclick="agregarFICModal()">➕ Agregar</button>
+                </div>
+                <div class="fic-grid">`;
+            
+            for (const item of items) {
+                html += `
+                    <div class="fic-item">
+                        <div class="label">${item.concepto}</div>
+                        <div class="amount ${item.monto >= 0 ? 'positive' : 'negative'}">${fmt(item.monto)}</div>
+                        <div style="margin-top:6px;">
+                            <button class="btn btn-sm btn-outline" onclick="editarFICModal(${item.id})">✏️</button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarItem(${item.id},'fic')">🗑</button>
+                        </div>
+                    </div>`;
+            }
+
+            html += `
+                </div>
+                <hr>
+                <div style="text-align:center;font-size:1.1em;">
+                    <strong>Total FIC:</strong> <span style="color:var(--primary);font-size:1.3em;">${fmt(total)}</span>
+                </div>
+            </div>`;
+
+            if (items.length === 0) {
+                html = '<div class="empty-state"><div class="icon">🏦</div><p>No hay datos en FIC</p></div>' + html;
+            }
+            container.innerHTML = html;
+        }
+
+        function agregarFICModal() {
+            currentModalType = 'fic';
+            editId = null;
+            openModal(`
+                <h3>Agregar a FIC</h3>
+                <form onsubmit="guardarFIC(event)">
+                    <div class="form-group"><label>Concepto</label><input type="text" id="fic-concepto" required></div>
+                    <div class="form-group"><label>Monto</label><input type="number" id="fic-monto" required step="0.01"></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Guardar</button>
+                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">Cancelar</button>
+                </form>`);
+        }
+
+        async function guardarFIC(e) {
+            e.preventDefault();
+            const data = {
+                concepto: document.getElementById('fic-concepto').value,
+                monto: parseFloat(document.getElementById('fic-monto').value)
+            };
+            if (editId) { data.id = editId; await dbPut('fic', data); }
+            else await dbAdd('fic', data);
+            closeModal();
+            await renderFIC();
+        }
+
+        async function editarFICModal(id) {
+            const items = await dbGetAll('fic');
+            const f = items.find(x => x.id === id);
+            if (!f) return;
+            editId = id;
+            currentModalType = 'fic';
+            openModal(`
+                <h3>Editar FIC</h3>
+                <form onsubmit="guardarFICEdit(event,${id})">
+                    <div class="form-group"><label>Concepto</label><input type="text" id="fic-concepto" value="${f.concepto}" required></div>
+                    <div class="form-group"><label>Monto</label><input type="number" id="fic-monto" value="${f.monto}" required step="0.01"></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Actualizar</button>
+                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">Cancelar</button>
+                </form>`);
+        }
+
+        async function guardarFICEdit(e, id) {
+            e.preventDefault();
+            const items = await dbGetAll('fic');
+            const f = items.find(x => x.id === id);
+            if (!f) return;
+            f.concepto = document.getElementById('fic-concepto').value;
+            f.monto = parseFloat(document.getElementById('fic-monto').value);
+            await dbPut('fic', f);
+            closeModal();
+            await renderFIC();
+        }
+
+        // ==================== TARJETA DE CRÉDITO ====================
+        async function renderTarjeta() {
+            const container = document.getElementById('tarjeta-container');
+            const gastos = await dbGetAll('tarjeta_gastos');
+            const deudas = await dbGetAll('tarjeta_deudas');
+
+            // Agrupar por corte
+            const cortes = {};
+            for (const g of gastos) {
+                const c = g.corte || 'Sin corte';
+                if (!cortes[c]) cortes[c] = { gastos: [], deudas: [] };
+                cortes[c].gastos.push(g);
+            }
+            for (const d of deudas) {
+                const c = d.corte || 'Sin corte';
+                if (!cortes[c]) cortes[c] = { gastos: [], deudas: [] };
+                cortes[c].deudas.push(d);
+            }
+
+            let html = '';
+            const nombresCortes = Object.keys(cortes).sort().reverse();
+
+            if (nombresCortes.length === 0) {
+                html = '<div class="empty-state"><div class="icon">💳</div><p>No hay cortes de tarjeta</p></div>';
+            }
+
+            for (const corte of nombresCortes) {
+                const data = cortes[corte];
+                const totalGastado = data.gastos.filter(g => g.tipo === 'Gasto').reduce((s,g) => s + g.monto, 0);
+                const totalAhorrado = data.gastos.filter(g => g.tipo === 'Ahorro').reduce((s,g) => s + g.monto, 0);
+                const deudasDebe = data.deudas.filter(d => d.estado === 'Debe').reduce((s,d) => s + d.monto, 0);
+                const deudasPago = data.deudas.filter(d => d.estado === 'Pago').reduce((s,d) => s + d.monto, 0);
+                const totalDeudasAFavor = deudasDebe; // Solo las que "Debe" están a tu favor
+                const saldoFinal = totalAhorrado + totalDeudasAFavor;
+                const haceFalta = totalGastado - totalAhorrado - totalDeudasAFavor;
+
+                html += `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">💳 Corte: ${corte}</span>
+                        <span class="badge badge-warning">📅 Límite: 9 de cada mes</span>
+                        <div class="btn-group">
+                            <button class="btn btn-outline btn-sm" onclick="duplicarCorteTarjeta('${corte}')">📋 Duplicar</button>
+                            <button class="btn btn-outline btn-sm" onclick="agregarGastoTarjetaModal('${corte}')">➕ Gasto</button>
+                            <button class="btn btn-outline btn-sm" onclick="agregarDeudaTarjetaModal('${corte}')">➕ Deuda</button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarCorteTarjeta('${corte}')">🗑 Corte</button>
+                        </div>
+                    </div>
+
+                    <!-- Gastos del corte -->
+                    <h4 style="margin-bottom:8px;">📊 Movimientos</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Tipo</th><th>Concepto</th><th>Monto</th><th></th></tr></thead>
+                            <tbody>
+                                ${data.gastos.map(g => `
+                                    <tr class="${g.tipo==='Ahorro'?'row-ingreso':'row-gasto'}">
+                                        <td>${g.tipo}</td><td>${g.concepto||g.categoria||''}</td>
+                                        <td>${fmt(g.monto)}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline" onclick="editarGastoModal(${g.id},'tarjeta_gastos')">✏️</button>
+                                            <button class="btn btn-sm btn-danger" onclick="eliminarItem(${g.id},'tarjeta_gastos')">🗑</button>
+                                        </td>
+                                    </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Deudas del corte -->
+                    <h4 style="margin:12px 0 8px;">👥 Deudas a tu favor</h4>
+                    ${data.deudas.map(d => `
+                        <div class="deuda-item ${d.estado === 'Pago' ? 'pagado' : 'debe'}">
+                            <div class="deuda-info">
+                                <div class="deuda-nombre">${d.persona}</div>
+                                <div class="deuda-monto">${fmt(d.monto)}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span class="badge ${d.estado==='Pago'?'badge-success':'badge-danger'}">${d.estado}</span>
+                                <button class="btn btn-sm btn-outline" onclick="toggleDeudaTarjeta(${d.id})">🔄</button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarItem(${d.id},'tarjeta_deudas')">🗑</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${data.deudas.length === 0 ? '<p style="color:var(--text-light);font-size:0.85em;">Sin deudas registradas</p>' : ''}
+
+                    <!-- Resumen del corte -->
+                    <hr>
+                    <div class="summary-grid">
+                        <div class="summary-item"><h4>Total Gastado</h4><div class="val negative">${fmt(totalGastado)}</div></div>
+                        <div class="summary-item"><h4>Total Ahorrado</h4><div class="val positive">${fmt(totalAhorrado)}</div></div>
+                        <div class="summary-item"><h4>Deudas a favor</h4><div class="val neutral">${fmt(totalDeudasAFavor)}</div></div>
+                        <div class="summary-item"><h4>Deudas Pagadas</h4><div class="val neutral">${fmt(deudasPago)}</div></div>
+                        <div class="summary-item"><h4>Saldo Final</h4><div class="val positive">${fmt(saldoFinal)}</div></div>
+                        <div class="summary-item"><h4>Hace Falta</h4><div class="val ${haceFalta <= 0 ? 'positive' : 'negative'}">${fmt(haceFalta)}</div></div>
+                    </div>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function agregarTarjetaCorteModal() {
+            const nombre = prompt('Nombre del nuevo corte (ej: Febrero 2026):');
+            if (!nombre) return;
+            agregarGastoTarjetaModal(nombre);
+        }
+
+        function agregarGastoTarjetaModal(corte) {
+            currentModalType = 'tarjeta_gasto';
+            editId = null;
+            openModal(`
+                <h3>Agregar Movimiento - ${corte}</h3>
+                <form onsubmit="guardarGastoTarjeta(event,'${corte}')">
+                    <div class="form-group"><label>Tipo</label><select id="tg-tipo" required><option value="Gasto">Gasto</option><option value="Ahorro">Ahorro</option></select></div>
+                    <div class="form-group"><label>Concepto</label><input type="text" id="tg-concepto" required></div>
+                    <div class="form-group"><label>Monto</label><input type="number" id="tg-monto" required min="0" step="0.01"></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Guardar</button>
+                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">Cancelar</button>
+                </form>`);
+        }
+
+        async function guardarGastoTarjeta(e, corte) {
+            e.preventDefault();
+            const data = {
+                corte,
+                tipo: document.getElementById('tg-tipo').value,
+                concepto: document.getElementById('tg-concepto').value,
+                monto: parseFloat(document.getElementById('tg-monto').value)
+            };
+            if (editId) { data.id = editId; await dbPut('tarjeta_gastos', data); }
+            else await dbAdd('tarjeta_gastos', data);
+            closeModal();
+            await renderTarjeta();
+        }
+
+        function agregarDeudaTarjetaModal(corte) {
+            currentModalType = 'tarjeta_deuda';
+            editId = null;
+            openModal(`
+                <h3>Agregar Deuda - ${corte}</h3>
+                <form onsubmit="guardarDeudaTarjeta(event,'${corte}')">
+                    <div class="form-group"><label>Persona</label><input type="text" id="td-persona" required></div>
+                    <div class="form-group"><label>Monto</label><input type="number" id="td-monto" required min="0" step="0.01"></div>
+                    <div class="form-group"><label>Estado</label><select id="td-estado"><option value="Debe">Debe</option><option value="Pago">Pago</option></select></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Guardar</button>
+                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">Cancelar</button>
+                </form>`);
+        }
+
+        async function guardarDeudaTarjeta(e, corte) {
+            e.preventDefault();
+            const data = {
+                corte,
+                persona: document.getElementById('td-persona').value,
+                monto: parseFloat(document.getElementById('td-monto').value),
+                estado: document.getElementById('td-estado').value
+            };
+            if (editId) { data.id = editId; await dbPut('tarjeta_deudas', data); }
+            else await dbAdd('tarjeta_deudas', data);
+            closeModal();
+            await renderTarjeta();
+        }
+
+        async function toggleDeudaTarjeta(id) {
+            const deudas = await dbGetAll('tarjeta_deudas');
+            const d = deudas.find(x => x.id === id);
+            if (!d) return;
+            d.estado = d.estado === 'Pago' ? 'Debe' : 'Pago';
+            await dbPut('tarjeta_deudas', d);
+            await renderTarjeta();
+        }
+
+        async function duplicarCorteTarjeta(corte) {
+            const nuevoNombre = prompt('Nombre del nuevo corte:');
+            if (!nuevoNombre) return;
+            const gastos = await dbGetAll('tarjeta_gastos');
+            const deudas = await dbGetAll('tarjeta_deudas');
+            for (const g of gastos.filter(x => x.corte === corte)) {
+                const n = { ...g }; delete n.id; n.corte = nuevoNombre;
+                await dbAdd('tarjeta_gastos', n);
+            }
+            for (const d of deudas.filter(x => x.corte === corte)) {
+                const n = { ...d }; delete n.id; n.corte = nuevoNombre;
+                await dbAdd('tarjeta_deudas', n);
+            }
+            await renderTarjeta();
+            alert('Corte duplicado a ' + nuevoNombre);
+        }
+
+        async function eliminarCorteTarjeta(corte) {
+            if (confirm(`¿Eliminar todo el corte "${corte}"?`)) {
+                const gastos = await dbGetAll('tarjeta_gastos');
+                const deudas = await dbGetAll('tarjeta_deudas');
+                for (const g of gastos.filter(x => x.corte === corte)) await dbDelete('tarjeta_gastos', g.id);
+                for (const d of deudas.filter(x => x.corte === corte)) await dbDelete('tarjeta_deudas', d.id);
+                await renderTarjeta();
+            }
+        }
+
+        // ==================== DEUDAS GENERALES ====================
+        async function renderDeudasGenerales() {
+            const container = document.getElementById('deudas-container');
+            const deudas = await dbGetAll('deudas');
+            const totalDebe = deudas.filter(d => d.estado === 'Debe' || d.estado === 'pendiente').reduce((s,d) => s + d.monto, 0);
+            const totalPago = deudas.filter(d => d.estado === 'Pago' || d.estado === 'pago').reduce((s,d) => s + d.monto, 0);
+
+            let html = `
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">👥 Deudas Generales</span>
+                    <button class="btn btn-outline btn-sm" onclick="agregarDeudaModal('deudas')">➕ Agregar</button>
+                </div>
+                <div class="summary-grid" style="margin-bottom:12px;">
+                    <div class="summary-item"><h4>Pendientes</h4><div class="val neutral">${fmt(totalDebe)}</div></div>
+                    <div class="summary-item"><h4>Pagadas</h4><div class="val neutral">${fmt(totalPago)}</div></div>
+                </div>`;
+
+            if (deudas.length === 0) {
+                html += '<div class="empty-state"><div class="icon">👥</div><p>No hay deudas</p></div>';
+            } else {
+                for (const d of deudas) {
+                    html += `
+                    <div class="deuda-item ${d.estado === 'Pago' || d.estado === 'pago' ? 'pagado' : 'debe'}">
+                        <div class="deuda-info">
+                            <div class="deuda-nombre">${d.persona}</div>
+                            <div class="deuda-monto">${fmt(d.monto)}</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span class="badge ${d.estado==='Pago'||d.estado==='pago'?'badge-success':'badge-danger'}">${d.estado}</span>
+                            <button class="btn btn-sm btn-outline" onclick="toggleDeudaGeneral(${d.id})">🔄</button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarItem(${d.id},'deudas')">🗑</button>
+                        </div>
+                    </div>`;
+                }
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function agregarDeudaModal(store) {
+            currentModalType = 'deuda';
+            editId = null;
+            openModal(`
+                <h3>Agregar Deuda</h3>
+                <form onsubmit="guardarDeudaGeneral(event,'${store}')">
+                    <div class="form-group"><label>Persona</label><input type="text" id="dg-persona" required></div>
+                    <div class="form-group"><label>Monto</label><input type="number" id="dg-monto" required min="0" step="0.01"></div>
+                    <div class="form-group"><label>Estado</label><select id="dg-estado"><option value="Debe">Debe</option><option value="Pago">Pago</option></select></div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Guardar</button>
+                    <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeModal()">Cancelar</button>
+                </form>`);
+        }
+
+        async function guardarDeudaGeneral(e, store) {
+            e.preventDefault();
+            const data = {
+                persona: document.getElementById('dg-persona').value,
+                monto: parseFloat(document.getElementById('dg-monto').value),
+                estado: document.getElementById('dg-estado').value
+            };
+            if (editId) { data.id = editId; await dbPut(store, data); }
+            else await dbAdd(store, data);
+            closeModal();
+            await renderAll();
+        }
+
+        async function toggleDeudaGeneral(id) {
+            const deudas = await dbGetAll('deudas');
+            const d = deudas.find(x => x.id === id);
+            if (!d) return;
+            d.estado = d.estado === 'Pago' ? 'Debe' : 'Pago';
+            await dbPut('deudas', d);
+            await renderDeudasGenerales();
+        }
+
+        // ==================== START ====================
+        init();
+    </script>
+</body>
+</html>
